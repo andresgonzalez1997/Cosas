@@ -154,6 +154,8 @@ def read_file(file_path):
 #------------------------------------------------------------------------------------------------------------------------------
 #------------------------------------------------------------------------------------------------------------------------------
 #------------------------------------------------------------------------------------------------------------------------------
+
+
 import competitor_data.purina_file_horizontal as pfh
 import os
 import tabula
@@ -173,42 +175,47 @@ LOCAL_REPOSITORY = "sharepoint_interface/local_repository/"
 
 def set_column_types(df):
     """
-    Parecido a tu código original, pero con checks para que no falle 
-    si alguna columna no existe en el DF horizontal.
+    Ajusta tipos para evitar errores de conversión (PyArrow) 
+    y mantener uniformidad con tus columnas horizontales.
     """
-    # Columnas string
+
+    # Columnas que deben ser STRING
     string_cols = [
         "product_number",
         "formula_code",
         "product_name",
-        "ref_col",
-        "unit_weight",
         "product_form",
+        "unit_weight",
+        "stocking_status",
         "fob_or_dlv",
         "species",
         "plant_location",
-        "date_inserted"
+        "date_inserted",
+        "source"
+        # Nota: Solo pon columnas que sepas que son texto real.
+        # Si 'ref_col' existe en tu parseo horizontal, agrégala aquí.
     ]
     for col in string_cols:
         if col in df.columns:
             df[col] = df[col].astype("string")
 
-    # Columnas float
+    # Columnas que deben ser numéricas (float)
     float_cols = [
+        "pallet_quantity",
+        "min_order_quantity",
+        "days_lead_time",
         "price_change",
-        "single_unit_list_price",
-        "full_pallet_list_price",
-        "pkg_bulk_discount",
-        "best_net_list_price",
         "list_price",
         "full_pallet_price",
         "half_load_full_pallet_price",
         "full_load_full_pallet_price",
         "full_load_best_price"
+        # Agrega más si tu parser horizontal extrae más columnas numéricas.
     ]
     for col in float_cols:
         if col in df.columns:
-            df[col] = pd.to_numeric(df[col], errors="coerce")  # o .astype("float64")
+            # 'errors="coerce"' => valores no convertibles => NaN
+            df[col] = pd.to_numeric(df[col], errors="coerce")
 
     return df
 
@@ -246,13 +253,14 @@ def excecute_process():
         print("[ERROR] No se pudo descargar el PDF.")
         exit()
 
-    # 6) Procesar el PDF con tu lógica
-    df = pfh.read_file(str(local_pdf_path))  # parseo horizontal
+    # 6) Procesar el PDF con tu lógica (parseo horizontal)
+    df = pfh.read_file(str(local_pdf_path))
 
-    # 6.1) Añadir columna "source" (opcional, si deseas rastrear su origen)
-    df["source"] = "pdf"
+    # 6.1) Opcional: si no lo hace tu parser, asignamos "source"
+    if "source" not in df.columns:
+        df["source"] = "pdf"
 
-    # 6.2) Forzar tipos para evitar conversion errors en PyArrow
+    # 6.2) Forzar tipos para evitar ConversionError en PyArrow
     df = set_column_types(df)
 
     # 7) Mostrar el DataFrame
@@ -262,7 +270,8 @@ def excecute_process():
     # 8) Subir a la tabla comp_price_horizontal_files en CDP (si hay filas)
     if df.shape[0] > 0:
         cdp = CDPInterface(env.production, crd.process_account)
-        base_name = os.path.splitext(pdf_filename)[0]  # nombre sin .pdf
+        # Nombre base para la tabla temporal en HDFS
+        base_name = os.path.splitext(pdf_filename)[0]
 
         if cdp.upload_data(df, "comp_price_horizontal_files", base_name):
             print(f"[INFO] Datos subidos correctamente a 'comp_price_horizontal_files'.")
