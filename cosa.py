@@ -161,68 +161,76 @@ import pandas as pd
 from sharepoint_interface.sharepoint_interface import download_pdf_from_sharepoint
 from sharepoint_interface.sharepoint_interface import get_sharepoint_interface
 
+# Necesitamos importaciones para CDP
+import credentials as crd
+import environments as env
+from cdp_interface import CDPInterface  # <-- Asegúrate de que apunte a tu __init__.py con la clase CDPInterface
+
 REPOSITORY  = "/sites/RetailPricing/Shared%20Documents/General/Competitive%20Intel/Competitor%20PDF%20new%20format%20(horizontal%20file)/"
 LOCAL_REPOSITORY = "sharepoint_interface/local_repository/"
 
-
-# --------------------------------------------------
-# 3. Testing
-# --------------------------------------------------
 def excecute_process():
-  # 1) Obtener la interfaz de SharePoint
-  sp = get_sharepoint_interface("retailpricing")
-  if not sp:
-      print("[ERROR] No se pudo obtener la interfaz de SharePoint.")
-      exit()
+    # 1) Obtener la interfaz de SharePoint
+    sp = get_sharepoint_interface("retailpricing")
+    if not sp:
+        print("[ERROR] No se pudo obtener la interfaz de SharePoint.")
+        exit()
 
-  # 2) Listar archivos en la carpeta
-  files = sp.files_in_folder(REPOSITORY)
-  if not files:
-      print(f"[INFO] No hay archivos en {REPOSITORY}")
-      exit()
+    # 2) Listar archivos en la carpeta
+    files = sp.files_in_folder(REPOSITORY)
+    if not files:
+        print(f"[INFO] No hay archivos en {REPOSITORY}")
+        exit()
 
-  # 3) Filtrar PDFs (en caso de que en la carpeta hay algun otro archivo que no sea pdf)
-  pdf_files = [f for f in files if f["file_name"].lower().endswith(".pdf")]
-  if not pdf_files:
-      print(f"[INFO] No se encontraron PDFs en {REPOSITORY}")
-      exit()
+    # 3) Filtrar PDFs
+    pdf_files = [f for f in files if f["file_name"].lower().endswith(".pdf")]
+    if not pdf_files:
+        print(f"[INFO] No se encontraron PDFs en {REPOSITORY}")
+        exit()
 
-  # 4) Seleccionar el primer PDF
-  pdf_to_download = pdf_files[0]
-  pdf_sharepoint_path = pdf_to_download["file_path"]  # Importante: ruta en SharePoint
-  pdf_filename = pdf_to_download["file_name"]
+    # 4) Seleccionar el primer PDF
+    pdf_to_download = pdf_files[0]
+    pdf_sharepoint_path = pdf_to_download["file_path"]
+    pdf_filename = pdf_to_download["file_name"]
 
-  # 5) Descargar el PDF a local
-  if not os.path.exists(LOCAL_REPOSITORY):
-      os.makedirs(LOCAL_REPOSITORY, exist_ok=True)
+    # 5) Descargar el PDF a local
+    if not os.path.exists(LOCAL_REPOSITORY):
+        os.makedirs(LOCAL_REPOSITORY, exist_ok=True)
 
-  local_pdf_path = sp.download_file(pdf_sharepoint_path, LOCAL_REPOSITORY)
-  if not local_pdf_path:
-      print("[ERROR] No se pudo descargar el PDF.")
-      exit()
+    local_pdf_path = sp.download_file(pdf_sharepoint_path, LOCAL_REPOSITORY)
+    if not local_pdf_path:
+        print("[ERROR] No se pudo descargar el PDF.")
+        exit()
 
-  # 6) Procesar el PDF con tu lógica
-  df = pfh.read_file(str(local_pdf_path))  # Esé el: str() para doblecheck de que no esté en string
+    # 6) Procesar el PDF con tu lógica
+    df = pfh.read_file(str(local_pdf_path))  # parseo horizontal
 
-  # 7) Simplemente imprimir el data frame por el momento----------------------------
-  print("[INFO] Final parsed DataFrame shape:", df.shape)
-  print(df.head(20))
+    # 7) Imprimir el DataFrame como antes
+    print("[INFO] Final parsed DataFrame shape:", df.shape)
+    print(df.head(20))
 
-  # 8) (OPCIONAL) Guardarlo a CSV
-  #output_csv = os.path.join(LOCAL_REPOSITORY, "statesville_prices.csv")
-  # df.to_csv(output_csv, index=False)
-  #print(f"[INFO] CSV guardado en: {output_csv}")
+    # 8) Subir a la tabla comp_price_horizontal_files en CDP
+    if df.shape[0] > 0:
+        cdp = CDPInterface(env.production, crd.process_account)
+        # file_name sin .pdf, por ejemplo
+        base_name = os.path.splitext(pdf_filename)[0]
+        
+        if cdp.upload_data(df, "comp_price_horizontal_files", base_name):
+            print(f"[INFO] Datos subidos correctamente a 'comp_price_horizontal_files'.")
+        else:
+            print("[ERROR] No se pudieron subir datos a CDP.")
+    else:
+        print("[INFO] DataFrame vacío; no se suben datos.")
 
-  # 9) Eliminar de SharePoint
-  try:
-      # Llamar a delete_file con la ruta en SharePoint
-      if sp.delete_file(pdf_sharepoint_path):
-          print(f"[INFO] Archivo '{pdf_filename}' eliminado de SharePoint.")
-      else:
-          print(f"[WARN] No se pudo eliminar '{pdf_filename}' de SharePoint.")
-  except Exception as e:
-      print(f"[ERROR] Al intentar eliminar en SharePoint: {e}")
+    # 9) Eliminar de SharePoint (independientemente de que se suba o no)
+    try:
+        if sp.delete_file(pdf_sharepoint_path):
+            print(f"[INFO] Archivo '{pdf_filename}' eliminado de SharePoint.")
+        else:
+            print(f"[WARN] No se pudo eliminar '{pdf_filename}' de SharePoint.")
+    except Exception as e:
+        print(f"[ERROR] Al intentar eliminar en SharePoint: {e}")
 
 
 if __name__ == "__main__":
-  excecute_process()
+    excecute_process()
