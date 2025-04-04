@@ -1,112 +1,38 @@
+#!/usr/bin/env python3
+
 import datetime
 import pandas as pd
 import tabula
 import re
 
-# Define las columnas ordenadas según el layout de Statesville
-def default_columns(df):
-    return df[[
-        "product_number",
-        "formula_code",
-        "product_name",
-        "product_form",
-        "unit_weight",
-        "pallet_quantity",
-        "stocking_status",
-        "min_order_quantity",
-        "lead_time_days",
-        "fob_or_dlv",
-        "price_change",
-        "list_price",
-        "full_pallet_price",
-        "half_load_full_pallet_price",
-        "full_load_full_pallet_price",
-        "full_load_best_price",
-        "species",
-        "plant_location",
-        "date_inserted",
-        "source"
-    ]]
 
-# Marca la fuente como "pdf"
-def source_columns(df):
-    df["source"] = "pdf"
-    return df
+# --------------------------------------------------
+# 1. Utility functions
+# --------------------------------------------------
 
-# Extrae unit_weight desde el nombre del producto si no está explícito
-def find_unit_weight(df):
-    for index, row in df.iterrows():
-        if not re.search("LB", str(row["unit_weight"])):
-            search_result = re.findall("\d*\s*LB", str(row["product_name"]))
-            if search_result:
-                df.at[index, "unit_weight"] = search_result[0]
-    return df
-
-# Convierte valores como "34.20-" en -34.20
 def correct_negative_value(value):
-    if str(value).endswith("-"):
-        return float(str(value).replace("-", "")) * -1
-    try:
-        return float(value)
-    except:
-        return value
+    """
+    Handle trailing-hyphen negative values like '100-' if your PDFs have them.
+    Otherwise, returns float or None for non-numeric strings.
+    """
+    text = str(value).strip()
+    if text.endswith("-"):
+        text = text.replace("-", "")
+        try:
+            return float(text) * -1
+        except ValueError:
+            return None
+    else:
+        try:
+            return float(text)
+        except ValueError:
+            return None
 
-# Aplica la corrección a columnas de precios
 def correct_negative_value_in_price_list(df):
-    for col in df.columns[10:16]:
-        df[col] = df[col].apply(correct_negative_value)
-    return df
-
-# Extrae la fecha efectiva desde zona específica
-def effective_date(file_path):
-    table = tabula.read_pdf(file_path, pages=1, area=[54,10,82,254])
-    results = re.findall(r"\d{2}/\d{2}/\d{2}", str(table[0]))
-    if results:
-        date = datetime.datetime.strptime(results[0], "%m/%d/%y").date()
-        return date.strftime("%Y-%m-%d")
-    return None
-
-# Extrae la ubicación de planta desde zona específica
-def plant_location(file_path):
-    table = tabula.read_pdf(file_path, pages=1, area=[0,500,40,700])
-    location = str(table[0]).split("\n")[0].strip().replace(",", "").upper()
-    return location
-
-# Agrega columnas auxiliares
-def add_effective_date(df, file_path):
-    df["date_inserted"] = effective_date(file_path)
-    return df
-
-def add_plant_location(df, file_path):
-    df["plant_location"] = plant_location(file_path)
-    return df
-
-# Detecta encabezados de especie (texto sin número) y los usa para categorizar cada fila
-def add_species_column(df):
-    species = None
-    df["species"] = None
-    for index, row in df.iterrows():
-        if re.match(r"\d", str(row[0])) is None:
-            species = str(row[0]).replace(",", "").upper()
-            df = df.drop(index, axis=0)
-        else:
-            df.loc[index, "species"] = species
-    df = df.reset_index(drop=True)
-    return df
-
-# Asigna los nombres correctos de columnas para Statesville
-def set_column_names(df):
-    df.columns = [
-        "product_number",
-        "formula_code",
-        "product_name",
-        "product_form",
-        "unit_weight",
-        "pallet_quantity",
-        "stocking_status",
-        "min_order_quantity",
-        "lead_time_days",
-        "fob_or_dlv",
+    """
+    Apply `correct_negative_value` to columns containing numeric price data.
+    """
+    numeric_cols = [
         "price_change",
         "list_price",
         "full_pallet_price",
@@ -114,38 +40,237 @@ def set_column_names(df):
         "full_load_full_pallet_price",
         "full_load_best_price"
     ]
+    for col in numeric_cols:
+        if col in df.columns:
+            df[col] = df[col].apply(correct_negative_value)
     return df
 
-# Solo valida si la tabla tiene suficiente columnas
-def valid_table(df):
-    return isinstance(df, pd.DataFrame) and df.shape[1] > 10
 
-# Une todos los fragmentos válidos del PDF
-def raw_price_list(table_list):
-    price_list = pd.DataFrame()
-    for tbl in table_list:
-        if valid_table(tbl):
-            price_list = pd.concat([price_list, tbl], ignore_index=True)
-    return price_list
-
-# Extrae todas las tablas desde coordenadas específicas para layout horizontal
-def find_tables_in_pdf(file_path):
+def effective_date(file_path):
+    """
+    Attempt to locate 'Effective Date - mm/dd/yyyy' on page 1.
+    Returns 'YYYY-MM-DD' or None.
+    """
     try:
-        # Área horizontal precisa para el layout de Statesville
-        return tabula.read_pdf(file_path, pages="all", area=[160, 25, 760, 1080], lattice=True)
-    except Exception as error:
+        # Slight bounding box that includes the "Effective Date" line
+        effective_date_table = tabula.read_pdf(
+            file_path,
+            pages=1,
+            area=[50, 0, 200, 400],  # Adjust as needed
+            guess=True,
+            stream=True
+        )
+        if not effective_date_table:
+            return None
+
+        text = str(effective_date_table[0])
+        # Search for mm/dd/yyyy or mm/dd/yy
+        date_pat = re.compile(r"\d{1,2}/\d{1,2}/(\d{4}|\d{2})")
+        match = date_pat.search(text)
+        if not match:
+            return None
+
+        date_str = match.group(0)
+        # Attempt parse with mm/dd/yyyy or mm/dd/yy
+        for fmt in ("%m/%d/%Y", "%m/%d/%y"):
+            try:
+                dt = datetime.datetime.strptime(date_str, fmt).date()
+                return dt.strftime("%Y-%m-%d")
+            except ValueError:
+                pass
+    except:
+        pass
+    return None
+
+
+def plant_location(file_path):
+    """
+    Extract the "HUDSON'S" name from the top-left portion of page 1.
+    If found, return "HUDSON'S". Otherwise return first line of text or None.
+    """
+    try:
+        loc_table = tabula.read_pdf(
+            file_path,
+            pages=1,
+            # A bounding box near the top-left corner that should include "HUDSON'S"
+            # (y1=0, x1=0, y2=50, x2=250) -> tweak if it doesn't capture the text
+            area=[0, 0, 50, 250],
+            guess=True,
+            stream=True
+        )
+        if not loc_table:
+            return None
+
+        text = str(loc_table[0])
+
+        # If "HUDSON'S" appears in the captured text, just return that
+        if "HUDSON'S" in text.upper():
+            return "HUDSON'S"
+
+        # Fallback: use the first line
+        first_line = text.split("\n")[0].strip()
+        return first_line.upper().replace(",", "")
+
+    except:
+        return None
+
+
+def default_columns(df):
+    """
+    Reorder or keep only these final columns in your output.
+    """
+    desired_cols = [
+        "product_number",
+        "formula_code",
+        "product_name",
+        "product_form",
+        "unit_weight",
+        "pallet_quantity",
+        "stocking_status",
+        "min_order_quantity",
+        "days_lead_time",
+        "fob_or_dlv",
+        "price_change",
+        "list_price",
+        "full_pallet_price",
+        "half_load_full_pallet_price",
+        "full_load_full_pallet_price",
+        "full_load_best_price",
+        "plant_location",
+        "date_inserted",
+        "source"
+    ]
+    existing = [c for c in desired_cols if c in df.columns]
+    return df[existing]
+
+# --------------------------------------------------
+# 2. Core logic to parse the PDF
+# --------------------------------------------------
+
+def find_tables_in_pdf(file_path):
+    """
+    Attempt to extract tables from all pages of the PDF.
+    Consider removing 'area' altogether if lines are missing,
+    or try 'lattice=True' if the PDF has strong ruling lines.
+    """
+    try:
+        table_list = tabula.read_pdf(
+            file_path,
+            pages="all",
+            stream=True,
+            guess=True
+        )
+        return table_list
+    except Exception as e:
+        print(f"[ERROR in find_tables_in_pdf]: {e}")
         return []
 
-# Función principal para procesar el archivo PDF horizontal
+
 def read_file(file_path):
-    tables = find_tables_in_pdf(file_path)
-    price_list = raw_price_list(tables)
-    price_list = set_column_names(price_list)
-    price_list = add_species_column(price_list)
-    price_list = add_plant_location(price_list, file_path)
-    price_list = add_effective_date(price_list, file_path)
+    # 1) Extract raw tables
+    table_list = find_tables_in_pdf(file_path)
+    if not table_list:
+        print("[WARN] No tables found at all!")
+        return pd.DataFrame()
+
+    # 2) Identify and rename only those tables with exactly 16 columns
+    valid_tables = []
+    for i, tbl in enumerate(table_list):
+        print(f"[DEBUG] Table {i} shape: {tbl.shape}")
+
+        # If the table has 16 columns, rename them to your new structure
+        if tbl.shape[1] == 16:
+            tbl.columns = [
+                "product_number",
+                "formula_code",
+                "product_name",
+                "product_form",
+                "unit_weight",
+                "pallet_quantity",
+                "stocking_status",
+                "min_order_quantity",
+                "days_lead_time",
+                "fob_or_dlv",
+                "price_change",
+                "list_price",
+                "full_pallet_price",
+                "half_load_full_pallet_price",
+                "full_load_full_pallet_price",
+                "full_load_best_price"
+            ]
+            valid_tables.append(tbl)
+        else:
+            print(f"  -> Skipping Table {i} (not 16 columns).")
+
+    if not valid_tables:
+        print("[WARN] No valid 16-col tables found after filtering.")
+        return pd.DataFrame()
+
+    # 3) Merge valid 16-col DataFrames
+    price_list = pd.concat(valid_tables, ignore_index=True)
+
+    # ----------------------------------------------------
+    # 4) Remove repeated header rows
+    # ----------------------------------------------------
+    remove_keywords = {"PRODUCT", "FORMULA", "NUMBER", "CODE", "UNIT",
+                       "PALLET", "WEIGHT", "EMPTY DATAFRAME"}
+
+    def looks_like_header(row):
+        """
+        Checks if the row contains any known repeated-header keywords.
+        We'll look at *all* columns, convert to uppercase, and see if
+        any word in remove_keywords is found in a cell that should hold data.
+        """
+        values = [str(x).strip().upper() for x in row]
+        for cell_text in values:
+            for kw in remove_keywords:
+                if kw in cell_text:
+                    return True
+        return False
+
+    # Identify "junk" rows
+    mask = price_list.apply(looks_like_header, axis=1)
+    # Keep rows NOT flagged as junk
+    price_list = price_list[~mask]
+
+    # Optionally, drop rows with no product_number or product_name
+    price_list = price_list.dropna(subset=["product_number", "product_name"], how="all")
+
+    # ----------------------------------------------------
+    # 5) Enrich DataFrame with location & date
+    # ----------------------------------------------------
+    # Now that we've cleaned up the table data, we fetch the location/date from the PDF's top section:
+    price_list["plant_location"] = plant_location(file_path)
+    price_list["date_inserted"] = effective_date(file_path)
+
+    # ----------------------------------------------------
+    # 6) Fix negative sign in numeric columns
+    # ----------------------------------------------------
     price_list = correct_negative_value_in_price_list(price_list)
-    price_list = find_unit_weight(price_list)
-    price_list = source_columns(price_list)
+
+    # ----------------------------------------------------
+    # 7) Mark the data source
+    # ----------------------------------------------------
+    price_list["source"] = "pdf"
+
+    # ----------------------------------------------------
+    # 8) Final reordering / columns
+    # ----------------------------------------------------
     price_list = default_columns(price_list)
+
     return price_list
+
+# --------------------------------------------------
+# 3. Testing
+# --------------------------------------------------
+if __name__ == "__main__":
+    file_path = "2024.10.07 Statesville.pdf"
+    df = read_file(file_path)
+
+    print("[INFO] Final parsed DataFrame shape:", df.shape)
+    print(df.head(20))  # Print first 20 rows for inspection
+
+    # Write out to CSV
+    df.to_csv("statesville_prices.csv", index=False)
+    print("[INFO] Wrote 'statesville_prices.csv'.")
+
