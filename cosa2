@@ -63,30 +63,64 @@ def download_pdf_from_sharepoint(repository_path, local_folder):
         print(f"[ERROR] Al descargar PDF: {e}")
         return None
 #----------------------------------------------------------------------
-# --------------------------------------------------
-# 3. Testing
-# --------------------------------------------------
 if __name__ == "__main__":
+    from sharepoint_interface.sharepoint_interface import get_sharepoint_interface
     from sharepoint_interface.sharepoint_interface import download_pdf_from_sharepoint
+    import os
     
-    # Ajusta a lo que corresponda en tu SharePoint
     REPOSITORY = "Shared Documents/Statesville"
-    LOCAL_REPOSITORY = "/ruta/local/donde/guardar"  # Ejemplo: "C:/temp" en Windows
+    LOCAL_REPOSITORY = "/ruta/local/donde/guardar"
 
-    # 1) Descargar el PDF (si hay) desde SharePoint
-    local_pdf_path = download_pdf_from_sharepoint(REPOSITORY, LOCAL_REPOSITORY)
-    if not local_pdf_path:
-        print("[WARN] No se descargó ningún PDF o no existe. Saliendo.")
+    # 1) Obtener la interfaz de SharePoint
+    sp = get_sharepoint_interface("retailpricing")
+    if not sp:
+        print("[ERROR] No se pudo obtener la interfaz de SharePoint.")
         exit()
 
-    # 2) Procesar con tu función read_file
-    df = read_file(local_pdf_path)
+    # 2) Listar archivos en la carpeta
+    files = sp.files_in_folder(REPOSITORY)
+    if not files:
+        print(f"[INFO] No hay archivos en {REPOSITORY}")
+        exit()
 
-    # 3) Mostrar resultados
+    # 3) Filtrar PDFs (o lo que te interese)
+    pdf_files = [f for f in files if f["file_name"].lower().endswith(".pdf")]
+    if not pdf_files:
+        print(f"[INFO] No se encontraron PDFs en {REPOSITORY}")
+        exit()
+
+    # 4) Seleccionar el primer PDF, por ejemplo
+    pdf_to_download = pdf_files[0]
+    pdf_sharepoint_path = pdf_to_download["file_path"]  # Importante: ruta en SharePoint
+    pdf_filename = pdf_to_download["file_name"]
+
+    # 5) Descargar el PDF a local
+    if not os.path.exists(LOCAL_REPOSITORY):
+        os.makedirs(LOCAL_REPOSITORY, exist_ok=True)
+
+    local_pdf_path = sp.download_file(pdf_sharepoint_path, LOCAL_REPOSITORY)
+    if not local_pdf_path:
+        print("[ERROR] No se pudo descargar el PDF.")
+        exit()
+
+    # 6) Procesar el PDF con tu lógica
+    df = read_file(str(local_pdf_path))  # Asegúrate de usar str() si no está en string
+
+    # 7) Hacer lo que necesites con el DataFrame
     print("[INFO] Final parsed DataFrame shape:", df.shape)
-    print(df.head(20))  # Print first 20 rows for inspection
+    print(df.head(20))
 
-    # 4) (Opcional) Guardarlo a CSV
-    output_csv = f"{LOCAL_REPOSITORY}/statesville_prices.csv"
+    # 8) (OPCIONAL) Guardarlo a CSV
+    output_csv = os.path.join(LOCAL_REPOSITORY, "statesville_prices.csv")
     df.to_csv(output_csv, index=False)
     print(f"[INFO] CSV guardado en: {output_csv}")
+
+    # 9) Eliminar de SharePoint
+    try:
+        # Llamar a delete_file con la ruta en SharePoint
+        if sp.delete_file(pdf_sharepoint_path):
+            print(f"[INFO] Archivo '{pdf_filename}' eliminado de SharePoint.")
+        else:
+            print(f"[WARN] No se pudo eliminar '{pdf_filename}' de SharePoint.")
+    except Exception as e:
+        print(f"[ERROR] Al intentar eliminar en SharePoint: {e}")
