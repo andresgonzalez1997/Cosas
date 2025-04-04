@@ -158,12 +158,15 @@ def read_file(file_path):
 
 import competitor_data.purina_file_horizontal as pfh
 import os
+import re
 import tabula
 import pandas as pd
+
+# SharePoint
 from sharepoint_interface.sharepoint_interface import download_pdf_from_sharepoint
 from sharepoint_interface.sharepoint_interface import get_sharepoint_interface
 
-# Necesitamos importaciones para CDP
+# CDP
 import credentials as crd
 import environments as env
 from cdp_interface import CDPInterface
@@ -173,12 +176,20 @@ REPOSITORY  = "/sites/RetailPricing/Shared%20Documents/General/Competitive%20Int
 LOCAL_REPOSITORY = "sharepoint_interface/local_repository/"
 
 
-def set_column_types(df):
+def sanitize_table_name(s: str) -> str:
     """
-    Ajusta tipos para evitar errores de conversión (PyArrow) 
-    y mantener uniformidad con tus columnas horizontales.
+    Reemplaza todo lo que no sea alfanumérico o '_' por '_'.
+    Evita espacios, puntos y otros caracteres que no admite Impala/Hive 
+    en nombres de tabla.
     """
+    return re.sub(r'[^A-Za-z0-9_]+', '_', s)
 
+
+def set_column_types(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Ajusta tipos para evitar errores de conversión (PyArrow)
+    y mantener un esquema consistente para la tabla en CDP.
+    """
     # Columnas que deben ser STRING
     string_cols = [
         "product_number",
@@ -192,8 +203,8 @@ def set_column_types(df):
         "plant_location",
         "date_inserted",
         "source"
-        # Nota: Solo pon columnas que sepas que son texto real.
-        # Si 'ref_col' existe en tu parseo horizontal, agrégala aquí.
+        # Agrega aquí otras columnas que sepas que son texto
+        # "ref_col", si en tu parser horizontal existe
     ]
     for col in string_cols:
         if col in df.columns:
@@ -210,11 +221,11 @@ def set_column_types(df):
         "half_load_full_pallet_price",
         "full_load_full_pallet_price",
         "full_load_best_price"
-        # Agrega más si tu parser horizontal extrae más columnas numéricas.
+        # Agrega aquí cualquier otra columna que sepas que es numérica
     ]
     for col in float_cols:
         if col in df.columns:
-            # 'errors="coerce"' => valores no convertibles => NaN
+            # Con errors="coerce", si hay texto no convertible, se vuelve NaN
             df[col] = pd.to_numeric(df[col], errors="coerce")
 
     return df
@@ -253,26 +264,29 @@ def excecute_process():
         print("[ERROR] No se pudo descargar el PDF.")
         exit()
 
-    # 6) Procesar el PDF con tu lógica (parseo horizontal)
+    # 6) Procesar el PDF (parseo horizontal)
     df = pfh.read_file(str(local_pdf_path))
 
-    # 6.1) Opcional: si no lo hace tu parser, asignamos "source"
+    # (Opcional) Añadir "source" si no lo agrega tu parser
     if "source" not in df.columns:
         df["source"] = "pdf"
 
-    # 6.2) Forzar tipos para evitar ConversionError en PyArrow
+    # 6.1) Forzar tipos
     df = set_column_types(df)
 
-    # 7) Mostrar el DataFrame
+    # 7) Mostrar el DataFrame (inspección)
     print("[INFO] Final parsed DataFrame shape:", df.shape)
     print(df.head(20))
 
-    # 8) Subir a la tabla comp_price_horizontal_files en CDP (si hay filas)
+    # 8) Subir a la tabla "comp_price_horizontal_files" en CDP (si hay registros)
     if df.shape[0] > 0:
         cdp = CDPInterface(env.production, crd.process_account)
-        # Nombre base para la tabla temporal en HDFS
-        base_name = os.path.splitext(pdf_filename)[0]
 
+        # Quita la extensión ".pdf" y sanitiza caracteres
+        base_name = os.path.splitext(pdf_filename)[0]
+        base_name = sanitize_table_name(base_name)
+
+        # Sube al CDP
         if cdp.upload_data(df, "comp_price_horizontal_files", base_name):
             print(f"[INFO] Datos subidos correctamente a 'comp_price_horizontal_files'.")
         else:
@@ -280,7 +294,7 @@ def excecute_process():
     else:
         print("[INFO] DataFrame vacío; no se suben datos.")
 
-    # 9) Eliminar de SharePoint
+    # 9) Eliminar de SharePoint, exitoso o no
     try:
         if sp.delete_file(pdf_sharepoint_path):
             print(f"[INFO] Archivo '{pdf_filename}' eliminado de SharePoint.")
