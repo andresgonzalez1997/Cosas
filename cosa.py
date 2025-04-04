@@ -164,10 +164,54 @@ from sharepoint_interface.sharepoint_interface import get_sharepoint_interface
 # Necesitamos importaciones para CDP
 import credentials as crd
 import environments as env
-from cdp_interface import CDPInterface  # <-- Asegúrate de que apunte a tu __init__.py con la clase CDPInterface
+from cdp_interface import CDPInterface
+
 
 REPOSITORY  = "/sites/RetailPricing/Shared%20Documents/General/Competitive%20Intel/Competitor%20PDF%20new%20format%20(horizontal%20file)/"
 LOCAL_REPOSITORY = "sharepoint_interface/local_repository/"
+
+
+def set_column_types(df):
+    """
+    Parecido a tu código original, pero con checks para que no falle 
+    si alguna columna no existe en el DF horizontal.
+    """
+    # Columnas string
+    string_cols = [
+        "product_number",
+        "formula_code",
+        "product_name",
+        "ref_col",
+        "unit_weight",
+        "product_form",
+        "fob_or_dlv",
+        "species",
+        "plant_location",
+        "date_inserted"
+    ]
+    for col in string_cols:
+        if col in df.columns:
+            df[col] = df[col].astype("string")
+
+    # Columnas float
+    float_cols = [
+        "price_change",
+        "single_unit_list_price",
+        "full_pallet_list_price",
+        "pkg_bulk_discount",
+        "best_net_list_price",
+        "list_price",
+        "full_pallet_price",
+        "half_load_full_pallet_price",
+        "full_load_full_pallet_price",
+        "full_load_best_price"
+    ]
+    for col in float_cols:
+        if col in df.columns:
+            df[col] = pd.to_numeric(df[col], errors="coerce")  # o .astype("float64")
+
+    return df
+
 
 def excecute_process():
     # 1) Obtener la interfaz de SharePoint
@@ -205,16 +249,21 @@ def excecute_process():
     # 6) Procesar el PDF con tu lógica
     df = pfh.read_file(str(local_pdf_path))  # parseo horizontal
 
-    # 7) Imprimir el DataFrame como antes
+    # 6.1) Añadir columna "source" (opcional, si deseas rastrear su origen)
+    df["source"] = "pdf"
+
+    # 6.2) Forzar tipos para evitar conversion errors en PyArrow
+    df = set_column_types(df)
+
+    # 7) Mostrar el DataFrame
     print("[INFO] Final parsed DataFrame shape:", df.shape)
     print(df.head(20))
 
-    # 8) Subir a la tabla comp_price_horizontal_files en CDP
+    # 8) Subir a la tabla comp_price_horizontal_files en CDP (si hay filas)
     if df.shape[0] > 0:
         cdp = CDPInterface(env.production, crd.process_account)
-        # file_name sin .pdf, por ejemplo
-        base_name = os.path.splitext(pdf_filename)[0]
-        
+        base_name = os.path.splitext(pdf_filename)[0]  # nombre sin .pdf
+
         if cdp.upload_data(df, "comp_price_horizontal_files", base_name):
             print(f"[INFO] Datos subidos correctamente a 'comp_price_horizontal_files'.")
         else:
@@ -222,7 +271,7 @@ def excecute_process():
     else:
         print("[INFO] DataFrame vacío; no se suben datos.")
 
-    # 9) Eliminar de SharePoint (independientemente de que se suba o no)
+    # 9) Eliminar de SharePoint
     try:
         if sp.delete_file(pdf_sharepoint_path):
             print(f"[INFO] Archivo '{pdf_filename}' eliminado de SharePoint.")
