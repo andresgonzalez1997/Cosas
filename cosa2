@@ -62,3 +62,31 @@ def download_pdf_from_sharepoint(repository_path, local_folder):
     except Exception as e:
         print(f"[ERROR] Al descargar PDF: {e}")
         return None
+#----------------------------------------------------------------------
+# --------------------------------------------------
+# 3. Testing
+# --------------------------------------------------
+if __name__ == "__main__":
+    from sharepoint_interface.sharepoint_interface import download_pdf_from_sharepoint
+    
+    # Ajusta a lo que corresponda en tu SharePoint
+    REPOSITORY = "Shared Documents/Statesville"
+    LOCAL_REPOSITORY = "/ruta/local/donde/guardar"  # Ejemplo: "C:/temp" en Windows
+
+    # 1) Descargar el PDF (si hay) desde SharePoint
+    local_pdf_path = download_pdf_from_sharepoint(REPOSITORY, LOCAL_REPOSITORY)
+    if not local_pdf_path:
+        print("[WARN] No se descargó ningún PDF o no existe. Saliendo.")
+        exit()
+
+    # 2) Procesar con tu función read_file
+    df = read_file(local_pdf_path)
+
+    # 3) Mostrar resultados
+    print("[INFO] Final parsed DataFrame shape:", df.shape)
+    print(df.head(20))  # Print first 20 rows for inspection
+
+    # 4) (Opcional) Guardarlo a CSV
+    output_csv = f"{LOCAL_REPOSITORY}/statesville_prices.csv"
+    df.to_csv(output_csv, index=False)
+    print(f"[INFO] CSV guardado en: {output_csv}")
