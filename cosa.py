@@ -306,3 +306,69 @@ def excecute_process():
 
 if __name__ == "__main__":
     excecute_process()
+
+Hi team,
+
+I’d like to share a quick update on the progress made regarding the automation of processing horizontal-format PDF files from SharePoint and loading them into CDP.
+
+✅ What has been completed:
+Automated SharePoint Integration:
+
+Successfully connected to the target SharePoint site using secure credentials.
+
+Filtered and downloaded only .pdf files from the designated folder.
+
+Files are removed from SharePoint after successful processing.
+
+Fully Working Horizontal PDF Parser:
+
+Implemented table extraction using tabula for horizontally structured PDFs.
+
+Cleaned up duplicate headers and formatted the data into a clean, unified structure.
+
+Enriched with key metadata fields: plant_location, date_inserted, and source.
+
+Data Type Standardization:
+
+A robust set_column_types function was implemented to safely cast string and numeric fields.
+
+Used errors="coerce" to gracefully handle non-numeric values in numeric columns (e.g., "FX", "MO") and prevent PyArrow/Parquet issues during serialization.
+
+CDP Integration:
+
+Data is automatically uploaded to the final table: comp_price_horizontal_files.
+
+Table names are sanitized (sanitize_table_name) to avoid issues with invalid characters (like dots or spaces) in file names.
+
+Full flow is now functional: download → parse → transform → upload → delete source file.
+
+Column Validation:
+
+Verified that the column ref_col is not present in the horizontal PDFs.
+
+Any legacy references to ref_col were removed to avoid issues such as “unknown column in column permutation.”
+
+🔜 Next Steps:
+Validate structure consistency for upcoming PDFs:
+
+Monitor whether future files include new columns.
+
+Adjust parser logic to handle optional or dynamic fields if needed.
+
+Enhance logging and monitoring (optional):
+
+Implement structured logging for auditing processed files, data uploaded, and any errors.
+
+Schedule as automated task:
+
+Evaluate the possibility of triggering the process on a schedule (via cron, Oozie, or Airflow).
+
+Align with stakeholders:
+
+Confirm with business users that the structure of the comp_price_horizontal_files table meets their reporting or analysis needs.
+
+Determine if a data reconciliation step (similar to Purina’s workflow) should be added.
+
+Please let me know if further adjustments are needed or if this is ready to be promoted to production.
+
+Best regards,
