@@ -1,0 +1,426 @@
+sharepoint_interface/local_repository/2024.10.07 Statesville.pdf
+Got stderr: Apr 05, 2025 4:24:00 AM org.apache.pdfbox.pdmodel.font.PDType1Font <init>
+WARNING: Using fallback font LiberationSans for base font Times-Roman
+Apr 05, 2025 4:24:00 AM org.apache.pdfbox.pdmodel.font.PDType1Font <init>
+WARNING: Using fallback font LiberationSans for base font Times-Bold
+Apr 05, 2025 4:24:00 AM org.apache.pdfbox.pdmodel.font.PDType1Font <init>
+WARNING: Using fallback font LiberationSans for base font Times-Italic
+Apr 05, 2025 4:24:00 AM org.apache.pdfbox.pdmodel.font.PDType1Font <init>
+WARNING: Using fallback font LiberationSans for base font Times-BoldItalic
+Apr 05, 2025 4:24:00 AM org.apache.pdfbox.pdmodel.font.PDType1Font <init>
+WARNING: Using fallback font LiberationSans for base font Helvetica
+Apr 05, 2025 4:24:00 AM org.apache.pdfbox.pdmodel.font.PDType1Font <init>
+WARNING: Using fallback font LiberationSans for base font Helvetica-Bold
+Apr 05, 2025 4:24:00 AM org.apache.pdfbox.pdmodel.font.PDType1Font <init>
+WARNING: Using fallback font LiberationSans for base font Helvetica-Oblique
+Apr 05, 2025 4:24:00 AM org.apache.pdfbox.pdmodel.font.PDType1Font <init>
+WARNING: Using fallback font LiberationSans for base font Helvetica-BoldOblique
+Apr 05, 2025 4:24:00 AM org.apache.pdfbox.pdmodel.font.PDType1Font <init>
+WARNING: Using fallback font LiberationSans for base font Courier
+Apr 05, 2025 4:24:00 AM org.apache.pdfbox.pdmodel.font.PDType1Font <init>
+WARNING: Using fallback font LiberationSans for base font Courier-Bold
+Apr 05, 2025 4:24:00 AM org.apache.pdfbox.pdmodel.font.PDType1Font <init>
+WARNING: Using fallback font LiberationSans for base font Courier-Oblique
+Apr 05, 2025 4:24:00 AM org.apache.pdfbox.pdmodel.font.PDType1Font <init>
+WARNING: Using fallback font LiberationSans for base font Courier-BoldOblique
+Apr 05, 2025 4:24:00 AM org.apache.pdfbox.pdmodel.font.PDType1Font <init>
+WARNING: Using fallback font LiberationSans for base font Symbol
+Apr 05, 2025 4:24:00 AM org.apache.pdfbox.pdmodel.font.PDType1Font <init>
+WARNING: Using fallback font LiberationSans for base font ZapfDingbats
+Apr 05, 2025 4:24:00 AM org.apache.pdfbox.pdmodel.font.PDType1Font <init>
+WARNING: Using fallback font LiberationSans for Helvetica-Bold
+Apr 05, 2025 4:24:00 AM org.apache.pdfbox.pdmodel.font.PDType1Font <init>
+WARNING: Using fallback font LiberationSans for Helvetica
+Apr 05, 2025 4:24:00 AM org.apache.pdfbox.rendering.PDFRenderer suggestKCMS
+INFO: Your current java version is: 1.8.0_151
+Apr 05, 2025 4:24:00 AM org.apache.pdfbox.rendering.PDFRenderer suggestKCMS
+INFO: To get higher rendering speed on old java 1.8 or 9 versions,
+Apr 05, 2025 4:24:00 AM org.apache.pdfbox.rendering.PDFRenderer suggestKCMS
+INFO:   update to the latest 1.8 or 9 version (>= 1.8.0_191 or >= 9.0.4),
+Apr 05, 2025 4:24:00 AM org.apache.pdfbox.rendering.PDFRenderer suggestKCMS
+INFO:   or
+Apr 05, 2025 4:24:00 AM org.apache.pdfbox.rendering.PDFRenderer suggestKCMS
+INFO:   use the option -Dsun.java2d.cmm=sun.java2d.cmm.kcms.KcmsServiceProvider
+Apr 05, 2025 4:24:00 AM org.apache.pdfbox.rendering.PDFRenderer suggestKCMS
+INFO:   or call System.setProperty("sun.java2d.cmm", "sun.java2d.cmm.kcms.KcmsServiceProvider")
+Apr 05, 2025 4:24:01 AM org.apache.pdfbox.pdmodel.font.PDType1Font <init>
+WARNING: Using fallback font LiberationSans for Helvetica-Bold
+Apr 05, 2025 4:24:01 AM org.apache.pdfbox.pdmodel.font.PDType1Font <init>
+WARNING: Using fallback font LiberationSans for Helvetica
+Apr 05, 2025 4:24:02 AM org.apache.pdfbox.pdmodel.font.PDType1Font <init>
+WARNING: Using fallback font LiberationSans for Helvetica-Bold
+Apr 05, 2025 4:24:02 AM org.apache.pdfbox.pdmodel.font.PDType1Font <init>
+WARNING: Using fallback font LiberationSans for Helvetica
+Apr 05, 2025 4:24:03 AM org.apache.pdfbox.pdmodel.font.PDType1Font <init>
+WARNING: Using fallback font LiberationSans for Helvetica-Bold
+Apr 05, 2025 4:24:03 AM org.apache.pdfbox.pdmodel.font.PDType1Font <init>
+WARNING: Using fallback font LiberationSans for Helvetica
+Apr 05, 2025 4:24:04 AM org.apache.pdfbox.pdmodel.font.PDType1Font <init>
+WARNING: Using fallback font LiberationSans for Helvetica-Bold
+Apr 05, 2025 4:24:04 AM org.apache.pdfbox.pdmodel.font.PDType1Font <init>
+WARNING: Using fallback font LiberationSans for Helvetica
+Apr 05, 2025 4:24:04 AM org.apache.pdfbox.pdmodel.font.PDType1Font <init>
+WARNING: Using fallback font LiberationSans for Helvetica-Bold
+Apr 05, 2025 4:24:04 AM org.apache.pdfbox.pdmodel.font.PDType1Font <init>
+WARNING: Using fallback font LiberationSans for Helvetica
+Apr 05, 2025 4:24:05 AM org.apache.pdfbox.pdmodel.font.PDType1Font <init>
+WARNING: Using fallback font LiberationSans for Helvetica-Bold
+Apr 05, 2025 4:24:05 AM org.apache.pdfbox.pdmodel.font.PDType1Font <init>
+WARNING: Using fallback font LiberationSans for Helvetica
+Apr 05, 2025 4:24:05 AM org.apache.pdfbox.pdmodel.font.PDType1Font <init>
+WARNING: Using fallback font LiberationSans for Helvetica-Bold
+Apr 05, 2025 4:24:05 AM org.apache.pdfbox.pdmodel.font.PDType1Font <init>
+WARNING: Using fallback font LiberationSans for Helvetica
+Apr 05, 2025 4:24:06 AM org.apache.pdfbox.pdmodel.font.PDType1Font <init>
+WARNING: Using fallback font LiberationSans for Helvetica-Bold
+Apr 05, 2025 4:24:06 AM org.apache.pdfbox.pdmodel.font.PDType1Font <init>
+WARNING: Using fallback font LiberationSans for Helvetica
+Apr 05, 2025 4:24:06 AM org.apache.pdfbox.pdmodel.font.PDType1Font <init>
+WARNING: Using fallback font LiberationSans for Helvetica-Bold
+Apr 05, 2025 4:24:06 AM org.apache.pdfbox.pdmodel.font.PDType1Font <init>
+WARNING: Using fallback font LiberationSans for Helvetica
+Apr 05, 2025 4:24:07 AM org.apache.pdfbox.pdmodel.font.PDType1Font <init>
+WARNING: Using fallback font LiberationSans for Helvetica-Bold
+Apr 05, 2025 4:24:07 AM org.apache.pdfbox.pdmodel.font.PDType1Font <init>
+WARNING: Using fallback font LiberationSans for Helvetica
+Apr 05, 2025 4:24:07 AM org.apache.pdfbox.pdmodel.font.PDType1Font <init>
+WARNING: Using fallback font LiberationSans for Helvetica-Bold
+Apr 05, 2025 4:24:07 AM org.apache.pdfbox.pdmodel.font.PDType1Font <init>
+WARNING: Using fallback font LiberationSans for Helvetica
+Apr 05, 2025 4:24:08 AM org.apache.pdfbox.pdmodel.font.PDType1Font <init>
+WARNING: Using fallback font LiberationSans for Helvetica-Bold
+Apr 05, 2025 4:24:08 AM org.apache.pdfbox.pdmodel.font.PDType1Font <init>
+WARNING: Using fallback font LiberationSans for Helvetica
+Apr 05, 2025 4:24:08 AM org.apache.pdfbox.pdmodel.font.PDType1Font <init>
+WARNING: Using fallback font LiberationSans for Helvetica-Bold
+Apr 05, 2025 4:24:08 AM org.apache.pdfbox.pdmodel.font.PDType1Font <init>
+WARNING: Using fallback font LiberationSans for Helvetica
+
+[DEBUG] Table 0 shape: (2, 4)
+  -> Skipping Table 0 (not 16 columns).
+[DEBUG] Table 1 shape: (8, 15)
+  -> Skipping Table 1 (not 16 columns).
+[DEBUG] Table 2 shape: (6, 16)
+[DEBUG] Table 3 shape: (8, 16)
+[DEBUG] Table 4 shape: (1, 16)
+[DEBUG] Table 5 shape: (2, 16)
+[DEBUG] Table 6 shape: (4, 16)
+[DEBUG] Table 7 shape: (2, 4)
+  -> Skipping Table 7 (not 16 columns).
+[DEBUG] Table 8 shape: (12, 16)
+[DEBUG] Table 9 shape: (1, 16)
+[DEBUG] Table 10 shape: (0, 16)
+[DEBUG] Table 11 shape: (3, 16)
+[DEBUG] Table 12 shape: (3, 16)
+[DEBUG] Table 13 shape: (2, 16)
+[DEBUG] Table 14 shape: (2, 4)
+  -> Skipping Table 14 (not 16 columns).
+[DEBUG] Table 15 shape: (12, 16)
+[DEBUG] Table 16 shape: (18, 16)
+[DEBUG] Table 17 shape: (2, 4)
+  -> Skipping Table 17 (not 16 columns).
+[DEBUG] Table 18 shape: (11, 16)
+[DEBUG] Table 19 shape: (3, 16)
+[DEBUG] Table 20 shape: (3, 16)
+[DEBUG] Table 21 shape: (4, 16)
+[DEBUG] Table 22 shape: (2, 16)
+[DEBUG] Table 23 shape: (2, 4)
+  -> Skipping Table 23 (not 16 columns).
+[DEBUG] Table 24 shape: (32, 16)
+[DEBUG] Table 25 shape: (2, 4)
+  -> Skipping Table 25 (not 16 columns).
+[DEBUG] Table 26 shape: (22, 16)
+[DEBUG] Table 27 shape: (8, 16)
+[DEBUG] Table 28 shape: (2, 4)
+  -> Skipping Table 28 (not 16 columns).
+[DEBUG] Table 29 shape: (23, 16)
+[DEBUG] Table 30 shape: (7, 16)
+[DEBUG] Table 31 shape: (2, 4)
+  -> Skipping Table 31 (not 16 columns).
+[DEBUG] Table 32 shape: (10, 16)
+[DEBUG] Table 33 shape: (5, 16)
+[DEBUG] Table 34 shape: (1, 16)
+[DEBUG] Table 35 shape: (4, 16)
+[DEBUG] Table 36 shape: (0, 16)
+[DEBUG] Table 37 shape: (1, 16)
+[DEBUG] Table 38 shape: (2, 4)
+  -> Skipping Table 38 (not 16 columns).
+[DEBUG] Table 39 shape: (8, 16)
+[DEBUG] Table 40 shape: (2, 16)
+[DEBUG] Table 41 shape: (9, 16)
+[DEBUG] Table 42 shape: (1, 16)
+[DEBUG] Table 43 shape: (1, 16)
+[DEBUG] Table 44 shape: (1, 16)
+[DEBUG] Table 45 shape: (2, 4)
+  -> Skipping Table 45 (not 16 columns).
+[DEBUG] Table 46 shape: (7, 16)
+[DEBUG] Table 47 shape: (0, 16)
+[DEBUG] Table 48 shape: (3, 16)
+[DEBUG] Table 49 shape: (15, 16)
+[DEBUG] Table 50 shape: (2, 4)
+  -> Skipping Table 50 (not 16 columns).
+[DEBUG] Table 51 shape: (12, 16)
+[DEBUG] Table 52 shape: (5, 16)
+[DEBUG] Table 53 shape: (3, 16)
+[DEBUG] Table 54 shape: (3, 16)
+[DEBUG] Table 55 shape: (1, 16)
+[DEBUG] Table 56 shape: (2, 4)
+  -> Skipping Table 56 (not 16 columns).
+[DEBUG] Table 57 shape: (21, 16)
+[DEBUG] Table 58 shape: (1, 16)
+[DEBUG] Table 59 shape: (1, 16)
+[DEBUG] Table 60 shape: (0, 16)
+[DEBUG] Table 61 shape: (2, 4)
+  -> Skipping Table 61 (not 16 columns).
+Got stderr: Apr 05, 2025 4:24:10 AM org.apache.pdfbox.pdmodel.font.PDType1Font <init>
+WARNING: Using fallback font LiberationSans for base font Times-Roman
+Apr 05, 2025 4:24:10 AM org.apache.pdfbox.pdmodel.font.PDType1Font <init>
+WARNING: Using fallback font LiberationSans for base font Times-Bold
+Apr 05, 2025 4:24:10 AM org.apache.pdfbox.pdmodel.font.PDType1Font <init>
+WARNING: Using fallback font LiberationSans for base font Times-Italic
+Apr 05, 2025 4:24:10 AM org.apache.pdfbox.pdmodel.font.PDType1Font <init>
+WARNING: Using fallback font LiberationSans for base font Times-BoldItalic
+Apr 05, 2025 4:24:10 AM org.apache.pdfbox.pdmodel.font.PDType1Font <init>
+WARNING: Using fallback font LiberationSans for base font Helvetica
+Apr 05, 2025 4:24:10 AM org.apache.pdfbox.pdmodel.font.PDType1Font <init>
+WARNING: Using fallback font LiberationSans for base font Helvetica-Bold
+Apr 05, 2025 4:24:10 AM org.apache.pdfbox.pdmodel.font.PDType1Font <init>
+WARNING: Using fallback font LiberationSans for base font Helvetica-Oblique
+Apr 05, 2025 4:24:10 AM org.apache.pdfbox.pdmodel.font.PDType1Font <init>
+WARNING: Using fallback font LiberationSans for base font Helvetica-BoldOblique
+Apr 05, 2025 4:24:10 AM org.apache.pdfbox.pdmodel.font.PDType1Font <init>
+WARNING: Using fallback font LiberationSans for base font Courier
+Apr 05, 2025 4:24:10 AM org.apache.pdfbox.pdmodel.font.PDType1Font <init>
+WARNING: Using fallback font LiberationSans for base font Courier-Bold
+Apr 05, 2025 4:24:10 AM org.apache.pdfbox.pdmodel.font.PDType1Font <init>
+WARNING: Using fallback font LiberationSans for base font Courier-Oblique
+Apr 05, 2025 4:24:10 AM org.apache.pdfbox.pdmodel.font.PDType1Font <init>
+WARNING: Using fallback font LiberationSans for base font Courier-BoldOblique
+Apr 05, 2025 4:24:10 AM org.apache.pdfbox.pdmodel.font.PDType1Font <init>
+WARNING: Using fallback font LiberationSans for base font Symbol
+Apr 05, 2025 4:24:10 AM org.apache.pdfbox.pdmodel.font.PDType1Font <init>
+WARNING: Using fallback font LiberationSans for base font ZapfDingbats
+Apr 05, 2025 4:24:10 AM org.apache.pdfbox.pdmodel.font.PDType1Font <init>
+WARNING: Using fallback font LiberationSans for Helvetica-Bold
+Apr 05, 2025 4:24:10 AM org.apache.pdfbox.pdmodel.font.PDType1Font <init>
+WARNING: Using fallback font LiberationSans for Helvetica
+
+Got stderr: Apr 05, 2025 4:24:11 AM org.apache.pdfbox.pdmodel.font.PDType1Font <init>
+WARNING: Using fallback font LiberationSans for base font Times-Roman
+Apr 05, 2025 4:24:11 AM org.apache.pdfbox.pdmodel.font.PDType1Font <init>
+WARNING: Using fallback font LiberationSans for base font Times-Bold
+Apr 05, 2025 4:24:11 AM org.apache.pdfbox.pdmodel.font.PDType1Font <init>
+WARNING: Using fallback font LiberationSans for base font Times-Italic
+Apr 05, 2025 4:24:11 AM org.apache.pdfbox.pdmodel.font.PDType1Font <init>
+WARNING: Using fallback font LiberationSans for base font Times-BoldItalic
+Apr 05, 2025 4:24:11 AM org.apache.pdfbox.pdmodel.font.PDType1Font <init>
+WARNING: Using fallback font LiberationSans for base font Helvetica
+Apr 05, 2025 4:24:11 AM org.apache.pdfbox.pdmodel.font.PDType1Font <init>
+WARNING: Using fallback font LiberationSans for base font Helvetica-Bold
+Apr 05, 2025 4:24:11 AM org.apache.pdfbox.pdmodel.font.PDType1Font <init>
+WARNING: Using fallback font LiberationSans for base font Helvetica-Oblique
+Apr 05, 2025 4:24:11 AM org.apache.pdfbox.pdmodel.font.PDType1Font <init>
+WARNING: Using fallback font LiberationSans for base font Helvetica-BoldOblique
+Apr 05, 2025 4:24:11 AM org.apache.pdfbox.pdmodel.font.PDType1Font <init>
+WARNING: Using fallback font LiberationSans for base font Courier
+Apr 05, 2025 4:24:11 AM org.apache.pdfbox.pdmodel.font.PDType1Font <init>
+WARNING: Using fallback font LiberationSans for base font Courier-Bold
+Apr 05, 2025 4:24:11 AM org.apache.pdfbox.pdmodel.font.PDType1Font <init>
+WARNING: Using fallback font LiberationSans for base font Courier-Oblique
+Apr 05, 2025 4:24:11 AM org.apache.pdfbox.pdmodel.font.PDType1Font <init>
+WARNING: Using fallback font LiberationSans for base font Courier-BoldOblique
+Apr 05, 2025 4:24:11 AM org.apache.pdfbox.pdmodel.font.PDType1Font <init>
+WARNING: Using fallback font LiberationSans for base font Symbol
+Apr 05, 2025 4:24:11 AM org.apache.pdfbox.pdmodel.font.PDType1Font <init>
+WARNING: Using fallback font LiberationSans for base font ZapfDingbats
+Apr 05, 2025 4:24:11 AM org.apache.pdfbox.pdmodel.font.PDType1Font <init>
+WARNING: Using fallback font LiberationSans for Helvetica-Bold
+Apr 05, 2025 4:24:11 AM org.apache.pdfbox.pdmodel.font.PDType1Font <init>
+WARNING: Using fallback font LiberationSans for Helvetica
+
+[CONTROL]-------------------------------------------------------------
+Estas columnas trae el data frame despues de leer el archivo de PDF:
+ ['product_number', 'formula_code', 'product_name', 'product_form', 'unit_weight', 'pallet_quantity', 'stocking_status', 'min_order_quantity', 'days_lead_time', 'fob_or_dlv', 'price_change', 'list_price', 'full_pallet_price', 'half_load_full_pallet_price', 'full_load_full_pallet_price', 'full_load_best_price', 'plant_location', 'date_inserted', 'source']
+   product_number formula_code             product_name product_form  \
+6            5554         5D02  AQUAMAX FRY STARTER 200     EXTRUDED   
+7            1466         5D04       AQUAMAX GROWER 400     EXTRUDED   
+8            1470         5D09   AQUAMAX POND FISH 4000     EXTRUDED   
+9           45303         5D05    AQUAMAX SPORTFISH 500     EXTRUDED   
+10           1468         5D06    AQUAMAX SPORTFISH 600     EXTRUDED   
+
+   unit_weight pallet_quantity stocking_status min_order_quantity  \
+6     50.00 LB              40              FX                  0   
+7     50.00 LB              40              MO                  0   
+8     50.00 LB              40              FX                  0   
+9     50.00 LB              40              FX                  0   
+10    50.00 LB              40              FX                  0   
+
+   days_lead_time fob_or_dlv  price_change  list_price  full_pallet_price  \
+6               5        DLV           0.0      101.66             101.26   
+7              17        DLV           0.0       64.71              64.31   
+8               5        DLV           0.0       40.09              39.69   
+9               5        DLV           0.0       51.09              50.69   
+10              5        DLV           0.0       51.09              50.69   
+
+    half_load_full_pallet_price  full_load_full_pallet_price  \
+6                        101.01                       100.76   
+7                         64.06                        63.81   
+8                         39.44                        39.19   
+9                         50.44                        50.19   
+10                        50.44                        50.19   
+
+    full_load_best_price plant_location date_inserted source  
+6                  97.74       HUDSON'S    2024-10-07    pdf  
+7                  61.90       HUDSON'S    2024-10-07    pdf  
+8                  38.01       HUDSON'S    2024-10-07    pdf  
+9                  48.68       HUDSON'S    2024-10-07    pdf  
+10                 48.68       HUDSON'S    2024-10-07    pdf  
+[CONTROL]-------------------------------------------------------------
+[CONTROL2]-------------------------------------------------------------
+COLUMNAS DESPUES DEL SET COLUM TYPES:
+ ['product_number', 'formula_code', 'product_name', 'product_form', 'unit_weight', 'pallet_quantity', 'stocking_status', 'min_order_quantity', 'days_lead_time', 'fob_or_dlv', 'price_change', 'list_price', 'full_pallet_price', 'half_load_full_pallet_price', 'full_load_full_pallet_price', 'full_load_best_price', 'plant_location', 'date_inserted', 'source']
+product_number                  string
+formula_code                    string
+product_name                    string
+product_form                    string
+unit_weight                     string
+pallet_quantity                  int64
+stocking_status                 string
+min_order_quantity               int64
+days_lead_time                   int64
+fob_or_dlv                      string
+price_change                   float64
+list_price                     float64
+full_pallet_price              float64
+half_load_full_pallet_price    float64
+full_load_full_pallet_price    float64
+full_load_best_price           float64
+plant_location                  string
+date_inserted                   string
+source                          string
+dtype: object
+[CONTROL2]-------------------------------------------------------------
+[INFO] Final parsed DataFrame shape: (226, 19)
+   product_number formula_code                    product_name product_form  \
+6            5554         5D02         AQUAMAX FRY STARTER 200     EXTRUDED   
+7            1466         5D04              AQUAMAX GROWER 400     EXTRUDED   
+8            1470         5D09          AQUAMAX POND FISH 4000     EXTRUDED   
+9           45303         5D05           AQUAMAX SPORTFISH 500     EXTRUDED   
+10           1468         5D06           AQUAMAX SPORTFISH 600     EXTRUDED   
+11    3003410-706         5D6R           AQUAMAX SPORTFISH MVP     EXTRUDED   
+12           1363         52C1                  GAME FISH CHOW     EXTRUDED   
+13          40967         51J2               PURINA CATFISH 32     EXTRUDED   
+14    3003995-634         329T   AR BLOCK HI-FAT 200LB PLASTIC       LIQUID   
+15          49132         30VY  PUR 30 PROTEIN HI ENRG CTL TUB       LIQUID   
+16    1800048-633         L3B3              RL 30-13 TUB 225LB       LIQUID   
+17          18156         32MW            W+R AS 4 MN TB 125LB       LIQUID   
+18          62709         32JP       W+R AS 4 MN TB AVL4 225LB       LIQUID   
+19          41033         307Q           W+R MAG MIN TUB 225LB       LIQUID   
+20    3005041-633         32SZ   W+R MIN MAG TUB ALTOSID 225LB       LIQUID   
+27    3010015-106         380N                  W+R SF AS 4 CP     GRANULES   
+28    3010016-106         380P          W+R SF AS 4 CP ALTOSID     GRANULES   
+29    3010035-106         381H                W+R SF AS 7.5 CP     GRANULES   
+30    3010036-106         381J        W+R SF AS 7.5 CP ALTOSID     GRANULES   
+31    3010063-106         382L                 W+R SF HMG 4 CP     GRANULES   
+
+   unit_weight  pallet_quantity stocking_status  min_order_quantity  \
+6     50.00 LB               40              FX                   0   
+7     50.00 LB               40              MO                   0   
+8     50.00 LB               40              FX                   0   
+9     50.00 LB               40              FX                   0   
+10    50.00 LB               40              FX                   0   
+11    50.00 LB               40              FX                   0   
+12    50.00 LB               40              FX                   0   
+13    50.00 LB               40              FX                   0   
+14   200.00 LB               10              FX                   0   
+15    60.00 LB               30              FX                   0   
+16   225.00 LB                8              FX                   0   
+17   125.00 LB               16              FX                   0   
+18   225.00 LB                8              FX                   0   
+19   225.00 LB                8              FX                   0   
+20   225.00 LB                8              FX                   0   
+27    50.00 LB               40              FX                   0   
+28    50.00 LB               40              FX                   0   
+29    50.00 LB               40              MO                  80   
+30    50.00 LB               40              MO                   0   
+31    50.00 LB               40              FX                   0   
+
+    days_lead_time fob_or_dlv  price_change  list_price  full_pallet_price  \
+6                5        DLV           0.0      101.66             101.26   
+7               17        DLV           0.0       64.71              64.31   
+8                5        DLV           0.0       40.09              39.69   
+9                5        DLV           0.0       51.09              50.69   
+10               5        DLV           0.0       51.09              50.69   
+11               5        DLV           0.0       51.66              51.26   
+12               5        DLV           0.0       34.59              34.19   
+13               5        DLV           0.0       32.06              31.66   
+14               5        DLV           0.0      117.85             117.45   
+15               5        DLV           0.0       49.80              49.40   
+16               5        DLV           0.0      141.42             141.02   
+17               5        DLV           0.0       87.37              86.97   
+18               5        DLV           0.0      168.76             168.36   
+19               5        DLV           0.0      151.55             151.15   
+20               5        DLV           0.0      175.85             175.45   
+27               5        DLV           0.0       26.09              25.69   
+28               5        DLV           0.0       31.81              31.41   
+29              10        DLV           0.0       30.46              30.06   
+30               5        DLV           0.0       36.66              36.26   
+31               5        DLV           0.0       27.71              27.31   
+
+    half_load_full_pallet_price  full_load_full_pallet_price  \
+6                        101.01                       100.76   
+7                         64.06                        63.81   
+8                         39.44                        39.19   
+9                         50.44                        50.19   
+10                        50.44                        50.19   
+11                        51.01                        50.76   
+12                        33.94                        33.69   
+13                        31.41                        31.16   
+14                       116.45                       115.45   
+15                        49.10                        48.80   
+16                       139.89                       138.76   
+17                        86.34                        85.71   
+18                       167.23                       166.10   
+19                       150.02                       148.89   
+20                       174.32                       173.19   
+27                          NaN                          NaN   
+28                          NaN                          NaN   
+29                          NaN                          NaN   
+30                          NaN                          NaN   
+31                          NaN                          NaN   
+
+    full_load_best_price plant_location date_inserted source  
+6                  97.74       HUDSON'S    2024-10-07    pdf  
+7                  61.90       HUDSON'S    2024-10-07    pdf  
+8                  38.01       HUDSON'S    2024-10-07    pdf  
+9                  48.68       HUDSON'S    2024-10-07    pdf  
+10                 48.68       HUDSON'S    2024-10-07    pdf  
+11                 49.24       HUDSON'S    2024-10-07    pdf  
+12                 32.68       HUDSON'S    2024-10-07    pdf  
+13                 30.23       HUDSON'S    2024-10-07    pdf  
+14                111.99       HUDSON'S    2024-10-07    pdf  
+15                 47.34       HUDSON'S    2024-10-07    pdf  
+16                134.60       HUDSON'S    2024-10-07    pdf  
+17                 83.14       HUDSON'S    2024-10-07    pdf  
+18                161.12       HUDSON'S    2024-10-07    pdf  
+19                144.42       HUDSON'S    2024-10-07    pdf  
+20                167.99       HUDSON'S    2024-10-07    pdf  
+27                 24.43       HUDSON'S    2024-10-07    pdf  
+28                 29.98       HUDSON'S    2024-10-07    pdf  
+29                 28.67       HUDSON'S    2024-10-07    pdf  
+30                 34.69       HUDSON'S    2024-10-07    pdf  
+31                 26.01       HUDSON'S    2024-10-07    pdf  
+uploading data to comp_price_horizontal_files
+export_data_to_parquet_file
+upload_parquet_file_to_hdfs
+upload_parquet_file_to_hdfs done.
+create_temp_table_from_parquet_file
+[DEBUG] Columns in temp table comp_price_horizontal_files_2024_10_07_Statesville after creation: [('product_number', 'string'), ('formula_code', 'string'), ('product_name', 'string'), ('ref_col', 'string'), ('unit_weight', 'string'), ('product_form', 'string'), ('fob_or_dlv', 'string'), ('price_change', 'double'), ('single_unit_list_price', 'double'), ('full_pallet_list_price', 'double'), ('pkg_bulk_discount', 'double'), ('best_net_list_price', 'double'), ('species', 'string'), ('plant_location', 'string'), ('date_inserted', 'string')]
+#########################################################################
+temp table created from parquet file.
+[DEBUG] column_def for temp table:  product_number, formula_code, product_name, ref_col, unit_weight, product_form, fob_or_dlv, price_change, single_unit_list_price, full_pallet_list_price, pkg_bulk_discount, best_net_list_price, species, plant_location, date_inserted
+#########################################################################
+AnalysisException: Unknown column 'ref_col' in column permutation
+
+[ERROR] No se pudieron subir datos a CDP.
+[INFO] Archivo '2024.10.07 Statesville.pdf' eliminado de SharePoint.
