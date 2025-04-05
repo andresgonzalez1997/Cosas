@@ -1,168 +1,11 @@
-import datetime
-import pandas as pd
-import tabula
-import re
-
-# Define las columnas ordenadas según el layout de Statesville
-def default_columns(df):
-    return df[[
-        "product_number",
-        "formula_code",
-        "product_name",
-        "product_form",
-        "unit_weight",
-        "pallet_quantity",
-        "stocking_status",
-        "min_order_quantity",
-        "lead_time_days",
-        "fob_or_dlv",
-        "price_change",
-        "list_price",
-        "full_pallet_price",
-        "half_load_full_pallet_price",
-        "full_load_full_pallet_price",
-        "full_load_best_price",
-        "species",
-        "plant_location",
-        "date_inserted",
-        "source"
-    ]]
-
-# Marca la fuente como "pdf"
-def source_columns(df):
-    df["source"] = "pdf"
-    return df
-
-# Extrae unit_weight desde el nombre del producto si no está explícito
-def find_unit_weight(df):
-    for index, row in df.iterrows():
-        if not re.search("LB", str(row["unit_weight"])):
-            search_result = re.findall("\d*\s*LB", str(row["product_name"]))
-            if search_result:
-                df.at[index, "unit_weight"] = search_result[0]
-    return df
-
-# Convierte valores como "34.20-" en -34.20
-def correct_negative_value(value):
-    if str(value).endswith("-"):
-        return float(str(value).replace("-", "")) * -1
-    try:
-        return float(value)
-    except:
-        return value
-
-# Aplica la corrección a columnas de precios
-def correct_negative_value_in_price_list(df):
-    for col in df.columns[10:16]:
-        df[col] = df[col].apply(correct_negative_value)
-    return df
-
-# Extrae la fecha efectiva desde zona específica
-def effective_date(file_path):
-    table = tabula.read_pdf(file_path, pages=1, area=[54,10,82,254])
-    results = re.findall(r"\d{2}/\d{2}/\d{2}", str(table[0]))
-    if results:
-        date = datetime.datetime.strptime(results[0], "%m/%d/%y").date()
-        return date.strftime("%Y-%m-%d")
-    return None
-
-# Extrae la ubicación de planta desde zona específica
-def plant_location(file_path):
-    table = tabula.read_pdf(file_path, pages=1, area=[0,500,40,700])
-    location = str(table[0]).split("\n")[0].strip().replace(",", "").upper()
-    return location
-
-# Agrega columnas auxiliares
-def add_effective_date(df, file_path):
-    df["date_inserted"] = effective_date(file_path)
-    return df
-
-def add_plant_location(df, file_path):
-    df["plant_location"] = plant_location(file_path)
-    return df
-
-# Detecta encabezados de especie (texto sin número) y los usa para categorizar cada fila
-def add_species_column(df):
-    species = None
-    df["species"] = None
-    for index, row in df.iterrows():
-        if re.match(r"\d", str(row[0])) is None:
-            species = str(row[0]).replace(",", "").upper()
-            df = df.drop(index, axis=0)
-        else:
-            df.loc[index, "species"] = species
-    df = df.reset_index(drop=True)
-    return df
-
-# Asigna los nombres correctos de columnas para Statesville
-def set_column_names(df):
-    df.columns = [
-        "product_number",
-        "formula_code",
-        "product_name",
-        "product_form",
-        "unit_weight",
-        "pallet_quantity",
-        "stocking_status",
-        "min_order_quantity",
-        "lead_time_days",
-        "fob_or_dlv",
-        "price_change",
-        "list_price",
-        "full_pallet_price",
-        "half_load_full_pallet_price",
-        "full_load_full_pallet_price",
-        "full_load_best_price"
-    ]
-    return df
-
-# Solo valida si la tabla tiene suficiente columnas
-def valid_table(df):
-    return isinstance(df, pd.DataFrame) and df.shape[1] > 10
-
-# Une todos los fragmentos válidos del PDF
-def raw_price_list(table_list):
-    price_list = pd.DataFrame()
-    for tbl in table_list:
-        if valid_table(tbl):
-            price_list = pd.concat([price_list, tbl], ignore_index=True)
-    return price_list
-
-# Extrae todas las tablas desde coordenadas específicas para layout horizontal
-def find_tables_in_pdf(file_path):
-    try:
-        # Área horizontal precisa para el layout de Statesville
-        return tabula.read_pdf(file_path, pages="all", area=[160, 25, 760, 1080], lattice=True)
-    except Exception as error:
-        return []
-
-# Función principal para procesar el archivo PDF horizontal
-def read_file(file_path):
-    tables = find_tables_in_pdf(file_path)
-    price_list = raw_price_list(tables)
-    price_list = set_column_names(price_list)
-    price_list = add_species_column(price_list)
-    price_list = add_plant_location(price_list, file_path)
-    price_list = add_effective_date(price_list, file_path)
-    price_list = correct_negative_value_in_price_list(price_list)
-    price_list = find_unit_weight(price_list)
-    price_list = source_columns(price_list)
-    price_list = default_columns(price_list)
-    return price_list
-
-#------------------------------------------------------------------------------------------------------------------------------
-#------------------------------------------------------------------------------------------------------------------------------
-#------------------------------------------------------------------------------------------------------------------------------
-#------------------------------------------------------------------------------------------------------------------------------
-
 import competitor_data.purina_file_horizontal as pfh
 import os
+import pathlib
 import re
 import tabula
 import pandas as pd
 
 # SharePoint
-from sharepoint_interface.sharepoint_interface import download_pdf_from_sharepoint
 from sharepoint_interface.sharepoint_interface import get_sharepoint_interface
 
 # CDP
@@ -170,22 +13,39 @@ import credentials as crd
 import environments as env
 from cdp_interface import CDPInterface
 
-
 REPOSITORY  = "/sites/RetailPricing/Shared%20Documents/General/Competitive%20Intel/Competitor%20PDF%20new%20format%20(horizontal%20file)/"
 LOCAL_REPOSITORY = "sharepoint_interface/local_repository/"
 
-
-def sanitize_table_name(s: str) -> str:
+def correct_file_name(val: str) -> str:
     """
-    Reemplaza todo lo que no sea alfanumérico o '_' por '_'.
-    Evita espacios, puntos y otros caracteres que no admite Impala/Hive 
-    en nombres de tabla.
+    'correct_file_name' del código original.
+    Reemplaza espacios/puntos/caracteres raros y 
+    deja un string 'limpio' para la tabla temporal.
     """
-    return re.sub(r'[^A-Za-z0-9_]+', '_', s)
+    val = str(val).lower()
+    # elimina ceros adelante
+    val = re.sub('^(0){2,}', "", val)
+    # elimina espacios al inicio
+    val = re.sub('^[" "-]+', "", val)
+    # elimina caracteres \r \n \t \u00a0
+    val = re.sub('[\r\n\r\t\u00a0]+', ' ', val)
+    # colapsa espacios múltiples
+    val = re.sub('( ){2,}', ' ', val)
+    # quita espacios finales
+    val = val.strip()
+    # reemplaza espacios, puntos y guiones por underscore
+    val = val.replace(" ", "_")
+    val = val.replace(".", "_")
+    val = val.replace("-", "_")
+    return val
 
 
 def set_column_types(df: pd.DataFrame) -> pd.DataFrame:
-    # Columnas que deben ser STRING
+    """
+    Asegura que no existan columnas obsoletas como 'ref_col' y
+    convierte tipos a float/string.
+    """
+    # Columnas string
     string_cols = [
         "product_number",
         "formula_code",
@@ -203,7 +63,7 @@ def set_column_types(df: pd.DataFrame) -> pd.DataFrame:
         if col in df.columns:
             df[col] = df[col].astype("string")
 
-    # Columnas que deben ser numéricas (float)
+    # Columnas float
     float_cols = [
         "pallet_quantity",
         "min_order_quantity",
@@ -214,96 +74,126 @@ def set_column_types(df: pd.DataFrame) -> pd.DataFrame:
         "half_load_full_pallet_price",
         "full_load_full_pallet_price",
         "full_load_best_price"
-        # Agrega aquí cualquier otra columna que sepas que es numérica
     ]
     for col in float_cols:
         if col in df.columns:
-            # Con errors="coerce", si hay texto no convertible, se vuelve NaN
             df[col] = pd.to_numeric(df[col], errors="coerce")
+
+    # Opcional: si existiera 'ref_col', lo quitamos en caso de que
+    # todavía aparezca por error:
+    if "ref_col" in df.columns:
+        df.drop(columns=["ref_col"], inplace=True)
 
     return df
 
 
 def excecute_process():
-    # 1) Obtener la interfaz de SharePoint
     sp = get_sharepoint_interface("retailpricing")
     if not sp:
         print("[ERROR] No se pudo obtener la interfaz de SharePoint.")
-        exit()
+        return
 
-    # 2) Listar archivos en la carpeta
     files = sp.files_in_folder(REPOSITORY)
     if not files:
         print(f"[INFO] No hay archivos en {REPOSITORY}")
-        exit()
+        return
 
-    # 3) Filtrar PDFs
+    # Filtrar PDFs
     pdf_files = [f for f in files if f["file_name"].lower().endswith(".pdf")]
     if not pdf_files:
         print(f"[INFO] No se encontraron PDFs en {REPOSITORY}")
-        exit()
+        return
 
-    # 4) Seleccionar el primer PDF
-    pdf_to_download = pdf_files[0]
-    pdf_sharepoint_path = pdf_to_download["file_path"]
-    pdf_filename = pdf_to_download["file_name"]
+    # Conexión a CDP
+    cdp = CDPInterface(env.production, crd.process_account)
 
-    # 5) Descargar el PDF a local
-    if not os.path.exists(LOCAL_REPOSITORY):
-        os.makedirs(LOCAL_REPOSITORY, exist_ok=True)
+    total = len(pdf_files)
+    for idx, pdf_info in enumerate(pdf_files, start=1):
+        pdf_filename = pdf_info["file_name"]
+        pdf_sharepoint_path = pdf_info["file_path"]
+        print(f"\n[{idx}/{total}] Procesando: {pdf_filename}")
 
-    local_pdf_path = sp.download_file(pdf_sharepoint_path, LOCAL_REPOSITORY)
-    if not local_pdf_path:
-        print("[ERROR] No se pudo descargar el PDF.")
-        exit()
+        if not os.path.exists(LOCAL_REPOSITORY):
+            os.makedirs(LOCAL_REPOSITORY, exist_ok=True)
 
-    # 6) Procesar el PDF (parseo horizontal)
-    df = pfh.read_file(str(local_pdf_path))
-    print("[CONTROL]-------------------------------------------------------------")
-    print(f"Estas columnas trae el data frame despues de leer el archivo de PDF:\n {df.columns.tolist()}")
-    print(df.head(5))
-    print("[CONTROL]-------------------------------------------------------------")
+        # Descargar
+        local_pdf_path = sp.download_file(pdf_sharepoint_path, LOCAL_REPOSITORY)
+        if not local_pdf_path:
+            print("[ERROR] No se pudo descargar el PDF.")
+            continue
 
-    # (Opcional) Añadir "source" si no lo agrega tu parser
-    if "source" not in df.columns:
-        df["source"] = "pdf"
+        # Parsear horizontal
+        df = pfh.read_file(str(local_pdf_path))
 
-    # 6.1) Forzar tipos
-    df = set_column_types(df)
-    print("[CONTROL2]-------------------------------------------------------------")
-    print(f"COLUMNAS DESPUES DEL SET COLUM TYPES:\n {df.columns.tolist()}")
-    print(df.dtypes)
-    print("[CONTROL2]-------------------------------------------------------------")
+        # Observa columnas
+        print("[DEBUG] Columnas del DF tras parsear:\n", df.columns.tolist())
+        if "ref_col" in df.columns:
+            print("[WARN] Se detectó ref_col en el DF... se eliminará.")
+        print(df.head(5))
 
-    # 7) Mostrar el DataFrame (inspección)
-    print("[INFO] Final parsed DataFrame shape:", df.shape)
-    print(df.head(20))
+        # Forzar tipos
+        df = set_column_types(df)
+        print("[DEBUG] Columnas tras set_column_types:\n", df.columns.tolist())
 
-    # 8) Subir a la tabla "comp_price_horizontal_files" en CDP (si hay registros)
-    if df.shape[0] > 0:
-        cdp = CDPInterface(env.production, crd.process_account)
+        # Revisar shape
+        print("[INFO] DataFrame shape:", df.shape)
+        print(df.head(10))
 
-        # Quita la extensión ".pdf" y sanitiza caracteres
-        base_name = os.path.splitext(pdf_filename)[0]
-        base_name = sanitize_table_name(base_name)
+        if df.shape[0] > 0:
+            # Nombre base sin extension
+            raw_name = pathlib.Path(pdf_filename).stem
+            # Aplica la logica "original" de correct_file_name
+            base_name = correct_file_name(raw_name)
+            print("[DEBUG] Nombre base para la tabla temporal:", base_name)
 
-        # Sube al CDP
-        if cdp.upload_data(df, "comp_price_horizontal_files", base_name):
-            print(f"[INFO] Datos subidos correctamente a 'comp_price_horizontal_files'.")
+            # Subir a la tabla final
+            if cdp.upload_data(df, "comp_price_horizontal_files", base_name):
+                print(f"[INFO] '{pdf_filename}' subido correctamente a 'comp_price_horizontal_files'.")
+            else:
+                print("[ERROR] Falló la subida a CDP.")
         else:
-            print("[ERROR] No se pudieron subir datos a CDP.")
-    else:
-        print("[INFO] DataFrame vacío; no se suben datos.")
+            print("[INFO] DF vacío, no se suben datos.")
 
-    # 9) Eliminar de SharePoint, exitoso o no
-    try:
-        if sp.delete_file(pdf_sharepoint_path):
-            print(f"[INFO] Archivo '{pdf_filename}' eliminado de SharePoint.")
-        else:
-            print(f"[WARN] No se pudo eliminar '{pdf_filename}' de SharePoint.")
-    except Exception as e:
-        print(f"[ERROR] Al intentar eliminar en SharePoint: {e}")
+        # Eliminar de SharePoint
+        try:
+            if sp.delete_file(pdf_sharepoint_path):
+                print(f"[INFO] Archivo '{pdf_filename}' eliminado de SharePoint.")
+            else:
+                print(f"[WARN] No se pudo eliminar '{pdf_filename}' de SharePoint.")
+        except Exception as e:
+            print(f"[ERROR] Al intentar eliminar en SharePoint: {e}")
+
+    print("\n[INFO] Proceso completado para todos los PDFs.")
 
 
 if __name__ == "__main__":
     excecute_process()
+
+
+    
+#------------------------------------------------------------
+
+
+CREATE TABLE IF NOT EXISTS @schema.@temp_table (
+    product_number STRING,
+    formula_code STRING,
+    product_name STRING,
+    product_form STRING,
+    unit_weight STRING,
+    pallet_quantity DOUBLE,
+    stocking_status STRING,
+    min_order_quantity DOUBLE,
+    days_lead_time DOUBLE,
+    fob_or_dlv STRING,
+    price_change DOUBLE,
+    list_price DOUBLE,
+    full_pallet_price DOUBLE,
+    half_load_full_pallet_price DOUBLE,
+    full_load_full_pallet_price DOUBLE,
+    full_load_best_price DOUBLE,
+    plant_location STRING,
+    date_inserted STRING,
+    source STRING
+)
+STORED AS PARQUET
+LOCATION "@hdfs_root_folder/@temp_table"
