@@ -155,112 +155,155 @@ def read_file(file_path):
 #------------------------------------------------------------------------------------------------------------------------------
 #------------------------------------------------------------------------------------------------------------------------------
 
-import pathlib
-import re
+import competitor_data.purina_file_horizontal as pfh
 import os
-import credentials as crd
-import environments as env
+import re
+import tabula
 import pandas as pd
 
-from sharepoint_interface import get_sharepoint_interface
+# SharePoint
+from sharepoint_interface.sharepoint_interface import download_pdf_from_sharepoint
+from sharepoint_interface.sharepoint_interface import get_sharepoint_interface
+
+# CDP
+import credentials as crd
+import environments as env
 from cdp_interface import CDPInterface
 
-# Estas son funciones que asumo ya existen en tu proyecto
-# Adáptalas a tus nombres / rutas:
-# - get_pending_files(sp_interface)
-# - get_competitor_data(file_path)
-# - check_if_data_exists_and_reconciliate(price_list, location, effective_date)
-# - set_column_types(df)  <-- si lo usas
 
-REPOSITORY = "/sites/RetailPricing/Shared%20Documents/General/Competitive%20Intel/Competitor%20PDF%20Upload/"
+REPOSITORY  = "/sites/RetailPricing/Shared%20Documents/General/Competitive%20Intel/Competitor%20PDF%20new%20format%20(horizontal%20file)/"
 LOCAL_REPOSITORY = "sharepoint_interface/local_repository/"
 
-def get_pending_files(sp_interface):
-    files = sp_interface.files_in_folder(REPOSITORY)
-    print(f"Archivos en la carpeta {REPOSITORY}: {files}")
-    return files
 
 def sanitize_table_name(s: str) -> str:
     """
-    Reemplaza todo lo que no sea alfanumérico o '_' por '_', 
-    evitando espacios y puntos en el nombre de la tabla temporal.
+    Reemplaza todo lo que no sea alfanumérico o '_' por '_'.
+    Evita espacios, puntos y otros caracteres que no admite Impala/Hive 
+    en nombres de tabla.
     """
     return re.sub(r'[^A-Za-z0-9_]+', '_', s)
 
 
-def process_pending_files():
-    """
-    1) Conecta a SharePoint y obtiene PDFs.
-    2) Descarga y parsea cada archivo PDF.
-    3) Reconciliación vs. BD (opcional).
-    4) Sube datos a la tabla final en CDP (comp_price_grid).
-    5) Elimina el archivo en SharePoint tras el proceso.
-    """
-    cdp = CDPInterface(env.production, crd.process_account)
+def set_column_types(df: pd.DataFrame) -> pd.DataFrame:
+    # Columnas que deben ser STRING
+    string_cols = [
+        "product_number",
+        "formula_code",
+        "product_name",
+        "product_form",
+        "unit_weight",
+        "stocking_status",
+        "fob_or_dlv",
+        "species",
+        "plant_location",
+        "date_inserted",
+        "source"
+    ]
+    for col in string_cols:
+        if col in df.columns:
+            df[col] = df[col].astype("string")
+
+    # Columnas que deben ser numéricas (float)
+    float_cols = [
+        "pallet_quantity",
+        "min_order_quantity",
+        "days_lead_time",
+        "price_change",
+        "list_price",
+        "full_pallet_price",
+        "half_load_full_pallet_price",
+        "full_load_full_pallet_price",
+        "full_load_best_price"
+        # Agrega aquí cualquier otra columna que sepas que es numérica
+    ]
+    for col in float_cols:
+        if col in df.columns:
+            # Con errors="coerce", si hay texto no convertible, se vuelve NaN
+            df[col] = pd.to_numeric(df[col], errors="coerce")
+
+    return df
+
+
+def excecute_process():
+    # 1) Obtener la interfaz de SharePoint
     sp = get_sharepoint_interface("retailpricing")
-    
-    # 1) Listar archivos
-    pending_files = get_pending_files(sp)
-    if not pending_files:
+    if not sp:
+        print("[ERROR] No se pudo obtener la interfaz de SharePoint.")
+        exit()
+
+    # 2) Listar archivos en la carpeta
+    files = sp.files_in_folder(REPOSITORY)
+    if not files:
         print(f"[INFO] No hay archivos en {REPOSITORY}")
-        return
-    
-    total_file_count = len(pending_files)
-    for counter, file in enumerate(pending_files, 1):
-        # Extraer el nombre sin extensión
-        raw_file_name = pathlib.Path(file["file_name"]).stem
-        # Convertirlo a algo seguro para tablas temporales
-        file_name_clean = sanitize_table_name(raw_file_name)
-        
-        print(f"{counter}/{total_file_count} -> file name: {file_name_clean}")
-        print(f"Descargando archivo desde SharePoint: {file['file_name']} ...")
-        
-        # 2) Descargar el PDF a LOCAL_REPOSITORY
-        file_local_path = sp.download_file(file["file_path"], LOCAL_REPOSITORY)
-        if not file_local_path:
-            print("[ERROR] No se pudo descargar el archivo.")
-            continue
-        
-        # 3) Parsear el PDF
-        comp_data_dict = get_competitor_data(str(file_local_path))
-        
-        price_list = comp_data_dict["price_list"]
-        location = comp_data_dict["location"]
-        effective_date = comp_data_dict["effective_date"]
-        
-        print("[DEBUG] Price list tras parseo:")
-        print(price_list.head(10))
-        
-        # (Opcional) Reconciliación vs. BD
-        price_list = check_if_data_exists_and_reconciliate(price_list, location, effective_date)
-        print("[DEBUG] Price list tras reconciliación:")
-        print(price_list.head(10))
+        exit()
 
-        # (Opcional) Quitar la columna "source" si no se requiere en BD
-        if "source" in price_list.columns:
-            price_list = price_list.drop("source", axis=1)
-        
-        # (Opcional) set_column_types
-        # price_list = set_column_types(price_list)
-        
-        # 4) Subir a la tabla final si hay data nueva
-        if price_list.shape[0] > 0:
-            uploaded_ok = cdp.upload_data(price_list, "comp_price_grid", file_name_clean)
-            if uploaded_ok:
-                print(f"[INFO] {file['file_name']} uploaded successfully to database.")
-                # 5) Borrar el archivo de SharePoint
-                sp.delete_file(file["file_path"])
-                print(f"[INFO] file deleted from SharePoint folder: {file_name_clean}")
-            else:
-                print("[ERROR] Ocurrió un problema subiendo a la BD.")
+    # 3) Filtrar PDFs
+    pdf_files = [f for f in files if f["file_name"].lower().endswith(".pdf")]
+    if not pdf_files:
+        print(f"[INFO] No se encontraron PDFs en {REPOSITORY}")
+        exit()
+
+    # 4) Seleccionar el primer PDF
+    pdf_to_download = pdf_files[0]
+    pdf_sharepoint_path = pdf_to_download["file_path"]
+    pdf_filename = pdf_to_download["file_name"]
+
+    # 5) Descargar el PDF a local
+    if not os.path.exists(LOCAL_REPOSITORY):
+        os.makedirs(LOCAL_REPOSITORY, exist_ok=True)
+
+    local_pdf_path = sp.download_file(pdf_sharepoint_path, LOCAL_REPOSITORY)
+    if not local_pdf_path:
+        print("[ERROR] No se pudo descargar el PDF.")
+        exit()
+
+    # 6) Procesar el PDF (parseo horizontal)
+    df = pfh.read_file(str(local_pdf_path))
+    print("[CONTROL]-------------------------------------------------------------")
+    print(f"Estas columnas trae el data frame despues de leer el archivo de PDF:\n {df.columns.tolist()}")
+    print(df.head(5))
+    print("[CONTROL]-------------------------------------------------------------")
+
+    # (Opcional) Añadir "source" si no lo agrega tu parser
+    if "source" not in df.columns:
+        df["source"] = "pdf"
+
+    # 6.1) Forzar tipos
+    df = set_column_types(df)
+    print("[CONTROL2]-------------------------------------------------------------")
+    print(f"COLUMNAS DESPUES DEL SET COLUM TYPES:\n {df.columns.tolist()}")
+    print(df.dtypes)
+    print("[CONTROL2]-------------------------------------------------------------")
+
+    # 7) Mostrar el DataFrame (inspección)
+    print("[INFO] Final parsed DataFrame shape:", df.shape)
+    print(df.head(20))
+
+    # 8) Subir a la tabla "comp_price_horizontal_files" en CDP (si hay registros)
+    if df.shape[0] > 0:
+        cdp = CDPInterface(env.production, crd.process_account)
+
+        # Quita la extensión ".pdf" y sanitiza caracteres
+        base_name = os.path.splitext(pdf_filename)[0]
+        base_name = sanitize_table_name(base_name)
+
+        # Sube al CDP
+        if cdp.upload_data(df, "comp_price_horizontal_files", base_name):
+            print(f"[INFO] Datos subidos correctamente a 'comp_price_horizontal_files'.")
         else:
-            print("[INFO] DataFrame vacío o duplicado. Data ya existe en BD.")
-            sp.delete_file(file["file_path"])
-            print(f"[INFO] file deleted from SharePoint folder: {file_name_clean}")
+            print("[ERROR] No se pudieron subir datos a CDP.")
+    else:
+        print("[INFO] DataFrame vacío; no se suben datos.")
 
-    print("Done.")
+    # 9) Eliminar de SharePoint, exitoso o no
+    try:
+        if sp.delete_file(pdf_sharepoint_path):
+            print(f"[INFO] Archivo '{pdf_filename}' eliminado de SharePoint.")
+        else:
+            print(f"[WARN] No se pudo eliminar '{pdf_filename}' de SharePoint.")
+    except Exception as e:
+        print(f"[ERROR] Al intentar eliminar en SharePoint: {e}")
 
 
 if __name__ == "__main__":
-    process_pending_files()
-
+    excecute_process()
